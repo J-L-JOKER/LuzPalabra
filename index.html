@@ -10,7 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LuzPalabra">
 <meta name="application-name" content="LuzPalabra">
-<meta name="description" content="LuzPalabra - Aprende la Biblia jugando. 1000 preguntas, 1000 ¿Quién soy?, 1000 versículos y 1000 palabras para Completa la Palabra."><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="LuzPalabra - Aprende la Biblia jugando. 1000 preguntas, 1000 ¿Quién soy?, 1000 versículos y 1000 palabras para Completa la Palabra."><meta charset="utf-8"><meta name="admob-app-id" content="ca-app-pub-1379047772851013~5199496876">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 *{box-sizing:border-box}
@@ -49,7 +50,7 @@ header p{margin:2px 0 0;font-weight:900;letter-spacing:1px;color:#000}
 /* PUERTA DE OFRENDA / ANUNCIO - LuzPalabra */
 #noSeBtn{background:linear-gradient(135deg,#ff9800,#ff5722);color:#fff;font-weight:900;font-size:18px;border:3px solid #fff;border-radius:999px;padding:14px 20px;margin:14px auto 4px;display:block;width:92%;max-width:520px;box-shadow:0 6px 0 #7a2b00,0 10px 22px rgba(0,0,0,.35);cursor:pointer}
 #noSeBtn:active{transform:translateY(3px)}
-.gateOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;display:none;align-items:center;justify-content:center;padding:16px}
+.gateOverlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px}
 .gateOverlay.show{display:flex}
 .gateBox{background:#fff;border-radius:24px;max-width:440px;width:100%;padding:22px;text-align:center;color:#111;box-shadow:0 20px 50px rgba(0,0,0,.5);border:4px solid #FFD700}
 .gateBox h3{font-size:24px;margin:4px 0 8px;color:#4B0082}
@@ -66,7 +67,6 @@ header p{margin:2px 0 0;font-weight:900;letter-spacing:1px;color:#000}
 .gateAdBox .adTitle{font-size:20px;font-weight:900;margin:10px 0}
 .gateAnswerBox{display:none;background:#E8F5E9;border:3px solid #2E7D32;border-radius:16px;padding:14px;margin:10px 0}
 .gateAnswerBox b{font-size:20px;color:#1B5E20}
-
 
 /* BOTÓN APOYAR A LA IGLESIA - GRANDE PALPITANTE */
 .apoyarWrap{padding:10px 12px 4px;text-align:center}
@@ -89,7 +89,7 @@ header p{margin:2px 0 0;font-weight:900;letter-spacing:1px;color:#000}
 
 </style></head>
 <body>
-<header><h1>✝️ Luz y Palabra</h1><p>APRENDE • ESCUCHA • JUEGA</p><p style="background:#FFD700;color:#000;display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:900;margin:6px 0 0">✅ VERSIÓN APOYAR - SI VES ESTO YA ES EL NUEVO</p></header>
+<header><h1>✝️ Luz y Palabra</h1><p>APRENDE • ESCUCHA • JUEGA</p></header>
 <!-- BOTÓN APOYAR A LA IGLESIA - PEGADO ARRIBA PARA QUE SE VEA -->
 <div style="padding:12px 12px 4px;text-align:center;background:#4B0082">
   <button type="button" onclick="abrirApoyarIglesia()" style="width:100%;max-width:560px;margin:0 auto;display:block;font-size:26px;font-weight:900;line-height:1.2;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.4);background:linear-gradient(90deg,#FFD700,#FF6B00,#FF2D95,#7B2FF7,#00C2FF);background-size:200% 100%;border:5px solid #fff;border-radius:22px;padding:20px 12px;cursor:pointer;box-shadow:0 8px 0 #6d1a00,0 14px 28px rgba(0,0,0,.45),0 0 0 4px #FFD700;animation:apoyarLatido 1.1s ease-in-out infinite">💛 APOYAR A LA IGLESIA $<span style="display:block;font-size:15px;font-weight:800;margin-top:6px">🙏 Toca aquí para bendecir con tu ofrenda</span></button>
@@ -134,6 +134,27 @@ var LETTERS=['A','B','C','D','E','F','G','H'];
 function quizActual(){ return (window.dificultad==='dificil') ? QUIZ_DIFICIL : QUIZ; }
 function setDificultad(nivel){ window.dificultad=nivel; state.qi=0; try{ if(typeof stopTimer==='function') stopTimer(); }catch(e){} renderQuiz(); try{ if(typeof speak==='function') speak(nivel==='dificil' ? 'Modo difícil. A ver si sabes, hermano.' : 'Modo fácil. Tú puedes.'); }catch(e){} }
 
+// Sistema de anuncios cada 3 preguntas - Cumple Play Store: respuesta libre, anuncio separado, ofrenda solo donativo
+
+// === AdMob LuzPalabra - Configuracion unica ===
+var ADMOB_APP_ID = "ca-app-pub-1379047772851013~5199496876";
+var ADMOB_AD_UNIT_ID = "ca-app-pub-1379047772851013/1852820794";
+var ADMOB_CONTADOR = 0;
+window.contadorPreguntas = window.contadorPreguntas || 0;
+function mostrarAnuncioCada3(){
+  ADMOB_CONTADOR++;
+  if(ADMOB_CONTADOR % 3 !== 0) return;
+  try{ if(window.AdMob && window.AdMob.showInterstitial){ window.AdMob.showInterstitial(); return; } }catch(e){}
+  try{ if(window.admob && window.admob.interstitial && window.admob.interstitial.show){ window.admob.interstitial.show(); return; } }catch(e){}
+  var overlay = document.createElement('div');
+  overlay.id = 'anuncioAuto';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:18px;padding:22px;max-width:360px;width:100%;text-align:center"><div style="font-size:12px;color:#888;letter-spacing:2px">ANUNCIO</div><div style="font-size:42px;margin:10px">📢</div><h3 style="margin:4px 0">Anuncio de AdMob - LuzPalabra</h3><p style="color:#555">Gracias por apoyar a LuzPalabra. Tu AdMob ya esta configurado. En la version de Play Store saldra tu anuncio real.</p><button onclick="cerrarAnuncioCada3()" style="padding:12px 22px;border:none;border-radius:999px;background:#1A237E;color:#fff;font-weight:900;cursor:pointer">Continuar</button></div>';
+  document.body.appendChild(overlay);
+  try{ if(typeof stopTimer==='function') stopTimer(); }catch(e){}
+}
+function cerrarAnuncioCada3(){ var o=document.getElementById('anuncioAuto'); if(o) o.remove(); }
+
 function renderQuiz(){
   var QA=quizActual(); var q=QA[state.qi%QA.length]; var opts=q.options||[];
   var html='<div class="card"><div style="text-align:center;padding:10px 10px 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button onclick="setDificultad(\'facil\')" style="padding:10px 18px;border-radius:999px;border:3px solid #fff;font-weight:900;cursor:pointer;background:'+(window.dificultad==='facil'||!window.dificultad?'#2E7D32':'#ddd')+';color:'+(window.dificultad==='facil'||!window.dificultad?'#fff':'#333')+'">😊 FÁCIL</button><button onclick="setDificultad(\'dificil\')" style="padding:10px 18px;border-radius:999px;border:3px solid #fff;font-weight:900;cursor:pointer;background:'+(window.dificultad==='dificil'?'#B71C1C':'#ddd')+';color:'+(window.dificultad==='dificil'?'#fff':'#333')+'">🔥 DIFÍCIL</button></div><div style="text-align:center;font-size:13px;color:#666;margin:4px">'+(window.dificultad==='dificil'?'🔥 Modo DIFÍCIL: '+QUIZ_DIFICIL.length+' preguntas difíciles':'😊 Modo FÁCIL: '+QUIZ.length+' preguntas')+'</div>'+timerHTML()+'<div class="qbox"><div class="preg-num">Pregunta '+(state.qi+1)+' de '+QA.length+'</div><h2>'+esc(q.q||'')+'</h2></div><div class="answers">';
@@ -145,12 +166,12 @@ function renderQuiz(){
 function timeoutQuiz(){
   var QA2=quizActual(); var q = QA2[state.qi%QA2.length]; var opts = q.options; var correct = q.answer;
   lockOpts();
-  document.getElementById('msg').innerHTML='<div class="msg">⏰ ¡Se acabó el tiempo! ¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo! Para ver la respuesta, elige ofrenda o anuncio.</div>';
-  setTimeout(function(){ abrirGateConRespuesta(opts[correct], q.ref||''); }, 800);
+  document.getElementById('msg').innerHTML='<div class="msg">⏰ ¡Se acabó el tiempo! ¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!</div>';
+  document.getElementById('msg').innerHTML+='<div class="msg" style="background:#E8F5E9">📖 La respuesta correcta es: <b>'+esc(opts[correct])+'</b> ('+(q.ref||'')+').</div>'; mostrarAnuncioCada3();
 }
 
 function answerQuiz(i,btn){
-  stopTimer();
+  stopTimer(); setTimeout(function(){ mostrarAnuncioCada3(); }, 900);
   var QA=quizActual(); var q=QA[state.qi%QA.length]; var opts=q.options||[]; var correct=q.answer;
   lockOpts();
   var b=document.querySelectorAll('.opt');
@@ -160,9 +181,9 @@ function answerQuiz(i,btn){
     addPuntos(10); speak('¡Correcto! ¡Excelente! ¡Dios te bendiga!');
   } else {
     if(btn) btn.classList.add('wrong');
-    document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo! Para ver la respuesta, elige ofrenda o anuncio.</div>';
+    document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!</div>';
     speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!');
-    setTimeout(function(){ abrirGateConRespuesta(opts[correct], q.ref||''); }, 900);
+    document.getElementById('msg').innerHTML+='<div class="msg" style="background:#E8F5E9">📖 La respuesta correcta es: <b>'+esc(opts[correct])+'</b> ('+(q.ref||'')+'). ¡Sigue, tú puedes!</div>';
   }
 }
 
@@ -174,13 +195,13 @@ function renderQuien(){
   item.options.forEach(function(o,i){html+='<button class="opt" onclick="answerQuien('+i+',this)"><span class="letter">'+LETTERS[i]+':</span> '+esc(o)+'</button>';});
   html+='</div><div id="msg"></div><div style="text-align:center;padding:0 14px 14px"><button class="btn3d" onclick="nextQuien()">Siguiente →</button></div><p class="small">Tienes 20 segundos para responder.</p></div>';
   document.getElementById('app').innerHTML=html; speak(item.clues.join('. '));
-  startTimer(20,function(){lockOpts();document.getElementById('msg').innerHTML='<div class="msg">⏰ ¡Se acabó el tiempo! Para ver la respuesta, elige ofrenda o anuncio.</div>'; setTimeout(function(){ abrirGateConRespuesta(item.answer,''); }, 800);});
+  startTimer(20,function(){lockOpts();document.getElementById('msg').innerHTML='<div class="msg">⏰ ¡Se acabó el tiempo! La respuesta se muestra sola. ¡Sigue jugando!</div>'; document.getElementById('msg').innerHTML+='<div class="msg" style="background:#E8F5E9">📖 La respuesta es: <b>'+esc(item.answer)+'</b></div>'; mostrarAnuncioCada3();});
 }
 function answerQuien(i,btn){
-  stopTimer(); var item=MF[state.mi%MF.length]; var correct=item.options.indexOf(item.answer); lockOpts();
+  stopTimer(); setTimeout(function(){ mostrarAnuncioCada3(); }, 900); var item=MF[state.mi%MF.length]; var correct=item.options.indexOf(item.answer); lockOpts();
   var b=document.querySelectorAll('.opt'); if(b[correct])b[correct].classList.add('correct');
   if(item.options[i]===item.answer){if(btn)btn.classList.add('correct');document.getElementById('msg').innerHTML='<div class="msg">¡Correcto! ¡Excelente! ¡Dios te bendiga! ¡Es '+esc(item.answer)+'! ¡+10 puntos!</div>';addPuntos(10);speak('¡Correcto! ¡Excelente! ¡Dios te bendiga!');}
-  else{if(btn)btn.classList.add('wrong');document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo! Para ver la respuesta, elige ofrenda o anuncio.</div>';speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!'); setTimeout(function(){ abrirGateConRespuesta(item.answer,''); }, 900);}
+  else{if(btn)btn.classList.add('wrong');document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!</div>';speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!'); setTimeout(function(){ abrirGateConRespuesta(item.answer,''); }, 900);}
 }
 function nextCompleta(){stopTimer();state.gi=(state.gi+1)%GF.length;renderCompleta();}
 // Completa la Palabra con tiempo 60
@@ -262,30 +283,15 @@ function buscarRespuestaPorTexto(){
   return '';
 }
 
-
 function abrirGateConRespuesta(respuesta, ref){
-  try{ if(typeof stopTimer==='function') stopTimer(); }catch(e){}
-  gateRespuestaActual = respuesta || '';
-  gateExtraActual = ref ? ('📖 ' + ref) : '';
-  document.getElementById('gateOfrendaBox').style.display='none';
-  document.getElementById('gateAdBox').style.display='none';
-  document.getElementById('gateAnswerBox').style.display='none';
-  var intro=document.getElementById('gateIntro'); if(intro) intro.style.display='block';
-  document.getElementById('gateOverlay').classList.add('show');
-  try{ if(typeof speak==='function') speak('Se acabó el tiempo. Para ver la respuesta, puedes dar una ofrenda chiquita o ver un anuncio.'); }catch(e){}
+  var msg=document.getElementById('msg');
+  if(msg){ msg.innerHTML += '<div class="msg" style="background:#E8F5E9">📖 La respuesta es: <b>'+esc(respuesta||'')+'</b> '+(ref||'')+'</div>'; }
+  try{ if(typeof speak==='function') speak('La respuesta es: '+(respuesta||'')); }catch(e){}
 }
 
 function abrirGate(){
-  try{ if(typeof stopTimer==='function') stopTimer(); }catch(e){}
-  try{ if(typeof speak==='function') speak('¿No sabes la respuesta? Puedes dar una ofrenda o ver un anuncio para seguir.'); }catch(e){}
-  var cur = window.currentQ || null;
-  if(cur){ gateRespuestaActual = cur.a || ''; gateExtraActual = cur.ref ? ('📖 ' + cur.ref) : ''; }
-  else { gateRespuestaActual = buscarRespuestaPorTexto(); gateExtraActual=''; }
-  document.getElementById('gateOfrendaBox').style.display='none';
-  document.getElementById('gateAdBox').style.display='none';
-  document.getElementById('gateAnswerBox').style.display='none';
-  document.getElementById('gateIntro').style.display='block';
-  document.getElementById('gateOverlay').classList.add('show');
+  // Puerta vieja eliminada: no bloquea. Solo cuenta anuncio cada 3.
+  try{ mostrarAnuncioCada3(); }catch(e){}
 }
 function cerrarGate(){
   document.getElementById('gateOverlay').classList.remove('show');
@@ -333,7 +339,6 @@ function cerrarGateYSeguir(){
   try{ if(typeof speak==='function') speak('Muy bien, seguimos aprendiendo.'); }catch(e){}
 }
 
-
 /* ==== APOYAR A LA IGLESIA ==== */
 function abrirApoyarIglesia(){
   try{ if(typeof speak==='function') speak('Gracias por apoyar a la iglesia. Dios te bendiga y te multiplique.'); }catch(e){}
@@ -361,44 +366,7 @@ function cerrarApoyarYVerAnuncio(){
 
 </script>
 <!-- PUERTA: NO SABE LA RESPUESTA -->
-<div id="gateOverlay" class="gateOverlay" role="dialog" aria-modal="true">
-  <div class="gateBox">
-    <div style="font-size:44px">🙏</div>
-    <h3>¿No sabes la respuesta?</h3>
-    <p id="gateIntro">No te preocupes, hermano. No te voy a dar la respuesta todavía.<br>Elige una opción para seguir y revelarla:</p>
-    <button class="gateBtn gateOfrenda" onclick="elegirOfrenda()">💛 DAR OFRENDA</button>
-    <button class="gateBtn gateAnuncio" onclick="verAnuncioGate()">▶️ VER ANUNCIO PARA SEGUIR</button>
-    <div id="gateOfrendaBox" class="gateOfrendaBox">
-      <b>💛 Gracias por bendecir este ministerio</b>
-      <p style="font-size:14px;margin:6px 0">Tu ofrenda chiquita ayuda a que LuzPalabra siga gratis para todos los hermanos. Con $2, $5 o $10 ya bendices mucho.</p>
-      <label>Monto de tu ofrenda</label>
-      <select id="ofrendaMonto"><option value="2">$2 MXN - semilla chiquita</option><option value="5" selected>$5 MXN - con amor</option><option value="10">$10 MXN - para la iglesia</option><option value="otro">Otro monto - lo que Dios te ponga</option></select>
-      <label>¿Cómo quieres darla?</label>
-      <select id="ofrendaMetodo"><option>Transferencia / WhatsApp - te paso los datos</option><option>PayPal</option><option>Mercado Pago</option><option>En la iglesia</option></select>
-      <p style="font-size:13px;color:#666">Aquí después pondrás tu número de WhatsApp, tu PayPal o tu CLABE. Por ahora es de ejemplo para que pruebes.</p>
-      <button class="gateBtn gateOfrenda" onclick="confirmarOfrenda()">✅ YA DI MI OFRENDA - VER RESPUESTA</button>
-    </div>
-    <div id="gateAdBox" class="gateAdBox">
-      <span class="adTag">ANUNCIO</span>
-      <div class="adTitle">✨ Apoya a LuzPalabra viendo este anuncio</div>
-      <p style="color:#ddd;font-size:14px">Este es un anuncio de ejemplo. Cuando la app esté en Play Store con AdMob, aquí saldrá un anuncio real y tú ganarás por cada vista.</p>
-      <div style="font-size:42px;margin:8px">📖 ✝️ 🕊️</div>
-      <p>Tu anuncio termina en <b id="adCuenta" style="font-size:22px;color:#FFD700">5</b> segundos...</p>
-      <button id="adCerrarBtn" class="gateBtn" style="background:#444;color:#fff;display:none" onclick="cerrarAnuncioYRevelar()">✅ CERRAR ANUNCIO - VER RESPUESTA</button>
-    </div>
-    <div id="gateAnswerBox" class="gateAnswerBox">
-      <div style="font-size:14px">LA RESPUESTA CORRECTA ES:</div>
-      <b id="gateAnswerText"></b>
-      <p id="gateAnswerExtra" style="font-size:15px"></p>
-      <button class="gateBtn" style="background:#2E7D32;color:#fff" onclick="cerrarGateYSeguir()">➡️ SEGUIR JUGANDO</button>
-    </div>
-    <!-- CERRAR QUITADO: para seguir hay que elegir ofrenda o anuncio -->
-    <p style="font-size:12px;color:#888">La respuesta se muestra cuando elijas ofrenda o anuncio. Con lo que puedas, con amor, ya ayudas.</p>
-  </div>
-</div>
-
-
-<!-- APOYAR A LA IGLESIA -->
+<!-- Puerta vieja eliminada: respuestas ya no se bloquean -->
 <div id="apoyarOverlay" class="gateOverlay" role="dialog" aria-modal="true">
   <div class="gateBox" style="border-color:#FF2D95">
     <div style="font-size:52px">⛪ 💛</div>
@@ -414,11 +382,11 @@ function cerrarApoyarYVerAnuncio(){
       <label>¿Cuánto quieres ofrendar?</label>
       <select id="apoyarMonto"><option value="2">$2 MXN - semilla chiquita</option><option value="5" selected>$5 MXN - con amor</option><option value="10">$10 MXN - para la iglesia</option><option value="otro">Otro monto - lo que Dios te ponga</option></select>
       <label>¿Cómo quieres darla?</label>
-      <select id="apoyarMetodo"><option>Transferencia / WhatsApp - te paso los datos</option><option>PayPal</option><option>Mercado Pago</option><option>En la iglesia</option></select>
-      <p style="font-size:13px;color:#666">Aquí después pondremos tu número de WhatsApp, tu PayPal o tu CLABE. Por ahora es de ejemplo para que pruebes.</p>
+      <select id="apoyarMetodo"><option>Transferencia - CLABE Spin by Oxxo los datos</option><option>PayPal</option><option>Mercado Pago</option><option>En la iglesia</option></select>
+      <p style="font-size:13px;color:#666">Transfiere a esta CLABE de Spin by Oxxo:<br><b style='font-size:20px;letter-spacing:1px;color:#fff'>7289 6900 0009 6007 69</b><br><span style='font-size:13px;color:#FFE082'>A nombre de LuzPalabra - Iglesia</span><br><button onclick="copiarCLABE()" style='margin-top:8px;padding:10px 18px;border:none;border-radius:999px;background:#FFD700;color:#000;font-weight:900;cursor:pointer'>📋 Copiar CLABE</button><br><span id='copiadoCLABE' style='font-size:12px;color:#A5D6A7'></span></p>
     </div>
     <button class="gateBtn gateOfrenda" onclick="confirmarApoyarIglesia()">💛 ✅ YA DI MI OFRENDA - DIOS TE BENDIGA</button>
-    <button class="gateBtn gateAnuncio" onclick="cerrarApoyarYVerAnuncio()">▶️ NO PUEDO AHORITA - VER ANUNCIO PARA APOYAR</button>
+    
     <div id="apoyarGracias" style="display:none;background:#E8F5E9;border:3px solid #2E7D32;border-radius:16px;padding:14px;margin:10px 0">
       <b style="font-size:20px;color:#1B5E20">¡Gracias, hermano! 💛</b>
       <p id="apoyarGraciasTexto" style="font-size:16px"></p>
@@ -428,7 +396,6 @@ function cerrarApoyarYVerAnuncio(){
     <p style="font-size:12px;color:#888">“Cada uno dé como propuso en su corazón.” — 2 Corintios 9:7</p>
   </div>
 </div>
-
 
 <!-- BOTÓN FLOTANTE APOYAR - SIEMPRE VISIBLE ABAJO -->
 <button type="button" onclick="abrirApoyarIglesia()" style="position:fixed;left:12px;right:12px;bottom:12px;z-index:9998;width:auto;max-width:560px;margin:0 auto;display:block;font-size:19px;font-weight:900;color:#fff;background:linear-gradient(90deg,#FFD700,#FF2D95,#7B2FF7);border:4px solid #fff;border-radius:999px;padding:14px;box-shadow:0 8px 22px rgba(0,0,0,.5);animation:apoyarLatido 1.1s ease-in-out infinite">💛 APOYAR A LA IGLESIA $</button>
