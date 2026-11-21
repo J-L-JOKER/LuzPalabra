@@ -89,7 +89,7 @@ header p{margin:2px 0 0;font-weight:900;letter-spacing:1px;color:#000}
 
 </style></head>
 <body>
-<header><h1>✝️ Luz y Palabra</h1><p>APRENDE • ESCUCHA • JUEGA</p></header>
+<header><h1>✝️ Luz y Palabra</h1><p>APRENDE • ESCUCHA • JUEGA</p><div id="progresoTexto" style="text-align:center;background:#fff;color:#111;font-weight:900;font-size:14px;padding:8px 12px;border-radius:999px;margin:8px auto;max-width:520px;border:3px solid #FFD700">⭐ Puntos: 0  •  ✅ Correctas: 0 de 0</div></header>
 <!-- BOTÓN APOYAR A LA IGLESIA - PEGADO ARRIBA PARA QUE SE VEA -->
 <div style="padding:12px 12px 4px;text-align:center;background:#4B0082">
   <button type="button" onclick="abrirApoyarIglesia()" style="width:100%;max-width:560px;margin:0 auto;display:block;font-size:26px;font-weight:900;line-height:1.2;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.4);background:linear-gradient(90deg,#FFD700,#FF6B00,#FF2D95,#7B2FF7,#00C2FF);background-size:200% 100%;border:5px solid #fff;border-radius:22px;padding:20px 12px;cursor:pointer;box-shadow:0 8px 0 #6d1a00,0 14px 28px rgba(0,0,0,.45),0 0 0 4px #FFD700;animation:apoyarLatido 1.1s ease-in-out infinite">💛 APOYAR A LA IGLESIA $<span style="display:block;font-size:15px;font-weight:800;margin-top:6px">🙏 Toca aquí para bendecir con tu ofrenda</span></button>
@@ -126,6 +126,30 @@ function startTimer(sec,onTimeOut){
 }
 function updateTimer(){var el=document.getElementById('timerNum');if(el){el.textContent=timeLeft; var box=document.getElementById('timerBox'); if(box){box.className='timer'+(timeLeft<=5?' low':'');}}}
 function timerHTML(){return '<div class="timer-wrap"><div class="timer" id="timerBox"><span id="timerNum">20</span></div></div>';}
+
+// === GUARDAR PROGRESO - para que no se borre al cerrar ===
+var PROGRESO = { puntos:0, correctas:0, contestadas:0, ultimaFecha:'' };
+try{
+  var _g = localStorage.getItem('luzpalabra_progreso');
+  if(_g){ PROGRESO = JSON.parse(_g); }
+}catch(e){}
+function guardarProgreso(){
+  try{
+    PROGRESO.ultimaFecha = new Date().toISOString().slice(0,10);
+    localStorage.setItem('luzpalabra_progreso', JSON.stringify(PROGRESO));
+    mostrarProgreso();
+  }catch(e){}
+}
+function mostrarProgreso(){
+  var el=document.getElementById('progresoTexto');
+  if(el){ el.textContent = '⭐ Puntos: '+PROGRESO.puntos+'  •  ✅ Correctas: '+PROGRESO.correctas+' de '+PROGRESO.contestadas; }
+}
+function sumarProgreso(esCorrecta){
+  PROGRESO.contestadas++;
+  if(esCorrecta){ PROGRESO.correctas++; PROGRESO.puntos+=10; }
+  guardarProgreso();
+}
+
 function addPuntos(n){state.puntos+=n; var el=document.getElementById('puntos'); if(el) el.textContent=state.puntos;}
 function lockOpts(){document.querySelectorAll('.opt').forEach(function(b){b.disabled=true;});}
 function show(g){stopTimer();state.game=g;if(g==='quiz')renderQuiz();if(g==='ahorcado')renderHang();if(g==='quien')renderQuien();if(g==='completa')renderCompleta();if(g==='memorama')renderMemorama();}
@@ -178,11 +202,11 @@ function answerQuiz(i,btn){
   if(i===correct){
     if(btn) btn.classList.add('correct');
     document.getElementById('msg').innerHTML='<div class="msg">¡Correcto! ¡Excelente! ¡Dios te bendiga! ¡+10 puntos!</div>';
-    addPuntos(10); speak('¡Correcto! ¡Excelente! ¡Dios te bendiga!');
+    addPuntos(10); sumarProgreso(true); speak('¡Correcto! ¡Excelente! ¡Dios te bendiga!');
   } else {
     if(btn) btn.classList.add('wrong');
     document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!</div>';
-    speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!');
+    speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!'); sumarProgreso(false);
     document.getElementById('msg').innerHTML+='<div class="msg" style="background:#E8F5E9">📖 La respuesta correcta es: <b>'+esc(opts[correct])+'</b> ('+(q.ref||'')+'). ¡Sigue, tú puedes!</div>';
   }
 }
@@ -203,6 +227,32 @@ function answerQuien(i,btn){
   if(item.options[i]===item.answer){if(btn)btn.classList.add('correct');document.getElementById('msg').innerHTML='<div class="msg">¡Correcto! ¡Excelente! ¡Dios te bendiga! ¡Es '+esc(item.answer)+'! ¡+10 puntos!</div>';addPuntos(10);speak('¡Correcto! ¡Excelente! ¡Dios te bendiga!');}
   else{if(btn)btn.classList.add('wrong');document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!</div>';speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!'); setTimeout(function(){ abrirGateConRespuesta(item.answer,''); }, 900);}
 }
+function nextQuien(){ stopTimer(); state.mi=(state.mi+1)%MF.length; renderQuien(); }
+
+// Completa el Versículo - usa datos GF que ya estaban en la app
+function renderCompleta(){
+  stopTimer();
+  var item=GF[state.gi%GF.length];
+  var html='<div class="card">'+timerHTML()+'<div class="qbox"><div class="preg-num">Completa el Versículo • '+(state.gi+1)+' de '+GF.length+'</div><h2>'+esc(item.before||'')+' <span style="color:#FFD700">_____</span> '+esc(item.after||'')+'</h2><p style="color:#FFE082;font-weight:900">'+esc(item.ref||'')+'</p></div><div class="answers">';
+  item.options.forEach(function(o,i){ html+='<button class="opt" onclick="answerCompleta('+i+',this)"><span class="letter">'+LETTERS[i]+':</span> '+esc(o)+'</button>'; });
+  html+='</div><div id="msg"></div><div style="text-align:center;padding:0 14px 14px"><button class="btn3d" onclick="nextCompleta()">Siguiente versículo →</button></div><p class="small">Tienes 20 segundos para responder.</p></div>';
+  document.getElementById('app').innerHTML=html; speak((item.before||'')+' _____ '+(item.after||''));
+  startTimer(20,function(){ lockOpts(); document.getElementById('msg').innerHTML='<div class="msg">⏰ ¡Se acabó el tiempo! La respuesta era: <b>'+esc(item.missing)+'</b> ('+esc(item.ref||'')+')</div>'; });
+}
+function answerCompleta(i,btn){
+  stopTimer(); setTimeout(function(){ mostrarAnuncioCada3(); }, 900);
+  var item=GF[state.gi%GF.length]; lockOpts();
+  if(item.options[i]===item.missing){
+    if(btn) btn.classList.add('correct');
+    document.getElementById('msg').innerHTML='<div class="msg">¡Correcto! ¡Excelente! ¡Dios te bendiga! ¡+10 puntos!</div>';
+    addPuntos(10); sumarProgreso(true); speak('¡Correcto! ¡Excelente! ¡Dios te bendiga!');
+  } else {
+    if(btn) btn.classList.add('wrong');
+    document.getElementById('msg').innerHTML='<div class="msg">¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!</div><div class="msg" style="background:#E8F5E9">📖 La respuesta es: <b>'+esc(item.missing)+'</b> ('+esc(item.ref||'')+')</div>';
+    sumarProgreso(false); speak('¡Casi! ¡Tú puedes! ¡Inténtalo de nuevo! ¡Dios está contigo!');
+  }
+}
+
 function nextCompleta(){stopTimer();state.gi=(state.gi+1)%GF.length;renderCompleta();}
 // Completa la Palabra con tiempo 60
 var hang={word:'',hint:'',guessed:[],left:6};
@@ -230,13 +280,20 @@ function guessLetter(ch){
 }
 function nextHang(){stopTimer();state.hi=(state.hi+1)%HF.length;renderHang();}
 // Memorama
-var memPairs=[['Noé','Arca'],['David','Goliat'],['Moisés','Mar Rojo'],['Daniel','Leones'],['Jonás','Pez'],['María','Jesús'],['Pablo','Cartas'],['Ester','Reina']];
+var MEMO_SETS=[
+[['Noé','Arca'],['David','Goliat'],['Moisés','Mar Rojo'],['Daniel','Leones'],['Jonás','Pez'],['María','Jesús'],['Pablo','Cartas'],['Ester','Reina']],
+[['Abraham','Sara'],['Jacob','José'],['Samuel','Ana'],['Rut','Noemí'],['Elías','Cuervos'],['Pedro','Llaves'],['Juan','Águila'],['Mateo','Evangelio']],
+[['Adán','Eva'],['Caín','Abel'],['Sansón','Dalila'],['Saúl','David'],['Salomón','Templo'],['Isaías','Profeta'],['Lucas','Médico'],['Tomás','Duda']]
+];
+var memBoard=0;
+var memPairs=MEMO_SETS[0];
 var memCards=[], memOpen=[], memFound=[];
+function nextMem(){ stopTimer(); memBoard=(memBoard+1)%MEMO_SETS.length; memPairs=MEMO_SETS[memBoard]; renderMemorama(); }
 function renderMemorama(){
   stopTimer();
   memCards=[]; memPairs.forEach(function(p){memCards.push({t:p[0],id:p[0]});memCards.push({t:p[1],id:p[0]});});
   memCards.sort(function(){return Math.random()-0.5;}); memOpen=[]; memFound=[];
-  var html='<div class="white-card"><h2>🃏 Memorama</h2><p class="big">Toca dos cartas. Si son pareja, se quedan.</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px" id="memgrid"></div><div id="msg"></div></div>';
+  var html='<div class="white-card"><h2>🃏 Memorama</h2><p class="big">Toca dos cartas. Si son pareja, se quedan.</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px" id="memgrid"></div><div id="msg"></div><div style="text-align:center;padding:10px"><button class="btn3d" onclick="nextMem()">Otro Memorama → Tablero (memBoard+1) de 3</button></div></div>';
   document.getElementById('app').innerHTML=html; drawMem();
 }
 function drawMem(){
@@ -255,6 +312,8 @@ function flipMem(i){
   }
 }
 show('quiz');
+
+try{ setTimeout(function(){ mostrarProgreso(); }, 500); }catch(e){}
 </script><script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -345,6 +404,25 @@ function abrirApoyarIglesia(){
   document.getElementById('apoyarGracias').style.display='none';
   document.getElementById('apoyarOverlay').classList.add('show');
 }
+
+function copiarCLABE(){
+  var c="728969000009600769";
+  var done=function(){ var s=document.getElementById('copiadoCLABE'); if(s){ s.textContent='¡CLABE copiada! Ya puedes pegarla en tu app de banco.'; s.style.color='#1B5E20'; s.style.fontWeight='900'; } try{ if(typeof speak==='function') speak('CLABE copiada. Ya puedes pegarla en tu app de banco.'); }catch(e){} };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(c).then(done).catch(function(){ fallbackCopiar(c, done); });
+    } else { fallbackCopiar(c, done); }
+  }catch(e){ fallbackCopiar(c, done); }
+}
+function fallbackCopiar(texto, done){
+  try{
+    var ta=document.createElement('textarea'); ta.value=texto; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done();
+  }catch(e){
+    var s=document.getElementById('copiadoCLABE'); if(s) s.textContent='Copia el número a mano: '+texto;
+  }
+}
+
 function cerrarApoyar(){
   document.getElementById('apoyarOverlay').classList.remove('show');
 }
@@ -383,7 +461,7 @@ function cerrarApoyarYVerAnuncio(){
       <select id="apoyarMonto"><option value="2">$2 MXN - semilla chiquita</option><option value="5" selected>$5 MXN - con amor</option><option value="10">$10 MXN - para la iglesia</option><option value="otro">Otro monto - lo que Dios te ponga</option></select>
       <label>¿Cómo quieres darla?</label>
       <select id="apoyarMetodo"><option>Transferencia - CLABE Spin by Oxxo los datos</option><option>PayPal</option><option>Mercado Pago</option><option>En la iglesia</option></select>
-      <p style="font-size:13px;color:#666">Transfiere a esta CLABE de Spin by Oxxo:<br><b style='font-size:20px;letter-spacing:1px;color:#fff'>7289 6900 0009 6007 69</b><br><span style='font-size:13px;color:#FFE082'>A nombre de LuzPalabra - Iglesia</span><br><button onclick="copiarCLABE()" style='margin-top:8px;padding:10px 18px;border:none;border-radius:999px;background:#FFD700;color:#000;font-weight:900;cursor:pointer'>📋 Copiar CLABE</button><br><span id='copiadoCLABE' style='font-size:12px;color:#A5D6A7'></span></p>
+      <p style="font-size:14px;color:#111;font-weight:700">Transfiere a esta CLABE de Spin by Oxxo:<br><b style='display:inline-block;font-size:22px;letter-spacing:1px;color:#000;background:#fff;border:3px solid #000;border-radius:10px;padding:8px 12px;font-weight:900'>7289 6900 0009 6007 69</b><br><span style='font-size:13px;color:#FFE082'>A nombre de LuzPalabra - Iglesia</span><br><button onclick="copiarCLABE()" style='margin-top:8px;padding:10px 18px;border:none;border-radius:999px;background:#FFD700;color:#000;font-weight:900;cursor:pointer'>📋 Copiar CLABE</button><br><span id='copiadoCLABE' style='font-size:12px;color:#A5D6A7'></span></p>
     </div>
     <button class="gateBtn gateOfrenda" onclick="confirmarApoyarIglesia()">💛 ✅ YA DI MI OFRENDA - DIOS TE BENDIGA</button>
     
