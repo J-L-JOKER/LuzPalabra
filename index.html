@@ -236,7 +236,7 @@ function renderCompleta(){
   var html='<div class="card">'+timerHTML()+'<div class="qbox"><div class="preg-num">Completa el Versículo • '+(state.gi+1)+' de '+GF.length+'</div><h2>'+esc(item.before||'')+' <span style="color:#FFD700">_____</span> '+esc(item.after||'')+'</h2><p style="color:#FFE082;font-weight:900">'+esc(item.ref||'')+'</p></div><div class="answers">';
   item.options.forEach(function(o,i){ html+='<button class="opt" onclick="answerCompleta('+i+',this)"><span class="letter">'+LETTERS[i]+':</span> '+esc(o)+'</button>'; });
   html+='</div><div id="msg"></div><div style="text-align:center;padding:0 14px 14px"><button class="btn3d" onclick="nextCompleta()">Siguiente versículo →</button></div><p class="small">Tienes 20 segundos para responder.</p></div>';
-  document.getElementById('app').innerHTML=html; speak((item.before||'')+' _____ '+(item.after||''));
+  document.getElementById('app').innerHTML=html; (function(){ var _b=(item.before||'').trim(); var _a=(item.after||'').trim(); var _voz=''; if(_b && _a){ _voz=_b+' ... '+_a; } else if(_b){ _voz=_b+' ...'; } else if(_a){ _voz=_a; } else { _voz='Completa el versículo'; } speak(_voz); })();
   startTimer(20,function(){ lockOpts(); document.getElementById('msg').innerHTML='<div class="msg">⏰ ¡Se acabó el tiempo! La respuesta era: <b>'+esc(item.missing)+'</b> ('+esc(item.ref||'')+')</div>'; });
 }
 function answerCompleta(i,btn){
